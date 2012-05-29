@@ -1,0 +1,5 @@
+<config>
+  <maxConnectionsPerHost>10</maxConnectionsPerHost>
+  <connectTimeout>300000</connectTimeout>
+  <timeout>50000</timeout>
+</config>

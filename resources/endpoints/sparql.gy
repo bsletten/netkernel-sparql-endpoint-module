@@ -1,0 +1,214 @@
+import java.net.URLDecoder
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.query.*;
+import org.netkernel.layer0.representation.*;
+import org.netkernel.rdf.jena.rep.*;
+
+
+def fetchGraphs(graphList) {
+	def handles = [:]
+	
+	graphList.each { g->
+	   req = null
+
+		if(g.startsWith("http://")) {
+			req = context.createRequest("active:httpGet")
+			req.addArgument("url", g)
+			req.addArgument("config", "res:/resources/config/httpClientConfig.xml")
+		} else {
+			req = context.createRequest(g)
+		}
+
+		handles[g] = context.issueAsyncRequest(req)
+	}
+	
+	handles
+}
+
+def getModelResult(h, handle) {
+   def m = null
+
+   result = handle.joinForResponse()
+   r = result.getRepresentation()
+
+   switch(r.getClass()) {
+	  case ByteArrayRepresentation.class :
+		if(h.startsWith("http://")) {
+			switch(result.getHeader("HTTP_ACCESSOR_STATUS_CODE_METADATA")) {
+			   case 200:
+		        m = context.source("active:jRDFEmptyModel").getModel()
+		        m = m.read(r.getInputStream(), "", "RDF/XML")
+			   break;
+			  default :
+				println "NON-200 HTTP RESPONSE"
+			  break;
+			}
+		} else {
+			println "NON-HTTP BYTEARRAYREPRESENTATION!"
+		}
+	  break;
+	
+	  case JenaModelRepresentation.class :
+		m = r.model
+	  break;
+	
+	  default :
+		println "UNHANDLED CLASS: " + r.getClass()	
+	  break;
+   }
+
+   m
+}
+
+def determineMIMEType(defaultMIMEType) {
+	requestedMIMEType = context.source("httpRequest:/header/Accept")
+	
+	if(requestedMIMEType == null || requestedMIMEType.equals("*/*")) {
+		requestedMIMEType = defaultMIMEType
+	}
+	
+	requestedMIMEType
+}
+
+def serializeRDF(requestedMIMEType, model) {
+	serializer = null
+	
+	switch(requestedMIMEType) {
+		case "application/rdf+xml":
+		serializer="active:jRDFSerializeXML"
+		break;
+		case "application/n3":
+		serializer="active:jRDFSerializeN3"
+		break;
+		case "text/plain":
+		serializer="active:jRDFSerializeN-TRIPLE"
+		break;
+		case "text/turtle":
+		serializer="active:jRDFSerializeTURTLE"
+		break;
+		default :
+		break;
+	}
+	
+	resp = null
+	
+	if(serializer != null) {
+	  req = context.createRequest(serializer)
+	  req.addArgumentByValue("operand", new JenaModelRepresentation(results))
+	  resp = context.issueRequest(req)
+	}
+	
+	resp
+}
+
+def serializeResultSet(requestedMIMEType, model) {
+	resp = null
+	
+	switch(requestedMIMEType) {
+		case "application/sparql-results+xml":
+		  resp = ResultSetFormatter.asXMLString(results)		
+		break;
+		case "application/sparql-results+json":
+		  baos = new ByteArrayOutputStream()
+		  ResultSetFormatter.outputAsJSON(baos, results)
+		  resp = new String(baos.toByteArray())
+		break;
+		case "text/csv":
+		  baos = new ByteArrayOutputStream()
+		  ResultSetFormatter.outputAsCSV(baos, results)
+		  resp = new String(baos.toByteArray())		
+		break;
+		case "text/plain":
+		  resp = ResultSetFormatter.asText(results)
+		default:
+		break;
+	}
+	
+	resp
+}
+
+parms = context.source("httpRequest:/params")
+defaultGraphParams = parms.getNodes("/default-graph-uri")
+namedGraphParams = parms.getNodes("/named-graph-uri")
+
+defaultGraphs = []
+namedGraphs = []
+
+defaultGraphParams.each { d ->
+	defaultGraphs.add(d.value)
+}
+
+namedGraphParams.each { n->
+	namedGraphs.add(n.value)
+}
+
+query = parms.getFirstNode("/query").value
+
+if(query == null) {
+	// Check the body
+} else {
+	// Unescape it
+	// TODO: Pull the encoding from the HTTP params?
+	query = URLDecoder.decode(query, "UTF-8")
+}
+
+query = QueryExecutionFactory.create(query)
+
+if(query.query.graphURIs.size > 0) {
+   defaultGraphs.addAll(query.query.graphURIs)
+}
+
+if(query.query.namedGraphURIs.size > 0) {
+	namedGraphs.addAll(query.query.namedGraphURIs)
+}
+
+names = query.query.graphURIs
+
+defaultGraphHandles = fetchGraphs(defaultGraphs)
+namedGraphHandles = fetchGraphs(namedGraphs)
+
+ds = DatasetFactory.createMem()
+m = context.source("active:jRDFEmptyModel").getModel()
+
+defaultGraphHandles.keySet().each { h ->
+	mResult = getModelResult(h, defaultGraphHandles[h])
+
+	if(mResult != null) {
+		m.add(mResult)
+	}
+}
+
+namedGraphHandles.keySet().each { h ->
+	mResult = getModelResult(h, namedGraphHandles[h])
+	if(mResult != null) {
+		ds.addNamedGraph(h, mResult)
+	}
+}
+
+ds.setDefaultModel(m)
+query = QueryExecutionFactory.create(query.query, ds)
+
+resp = null
+mimeType = null
+
+switch(query.query.queryType) {
+	case Query.QueryTypeSelect :
+  	  results = query.execSelect()
+	  mimeType = determineMIMEType("application/sparql-results+xml")
+	  resp = serializeResultSet(mimeType, results)	
+	break;
+	case Query.QueryTypeConstruct :
+	  results = query.execConstruct()
+	  mimeType = determineMIMEType("application/rdf+xml")	
+	  resp = serializeRDF(mimeType, results)
+	break;
+}
+
+resp = context.createResponseFrom(resp)
+
+if(mimeType != null) {
+   resp.setMimeType(mimeType)
+} else {
+  // TODO: 415 handling
+}

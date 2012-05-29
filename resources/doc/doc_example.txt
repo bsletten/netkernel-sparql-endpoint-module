@@ -1,0 +1,8 @@
+{endpoint}urn:net:bosatsu:sparql:ExampleEndpoint{/endpoint}
+==Detail==
+This example endpoint simply formats the value argument it receives and returns it as a string response. Logging it along the way.
+
+==Resource Identifier Syntax==
+The endpoint accepts requests which match the identifier syntax of '''res:/sparql/service/ANY_OTHER_TEXT'''
+
+The '''ANY_OTHER_TEXT''' is captured as the value argument passed into the endpoint.

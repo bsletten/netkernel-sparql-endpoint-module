@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<books>
+	<book>
+		<id>book:urn:net:bosatsu:sparql</id>
+		<title>A SPARQL Module</title>
+		<desc>SPARQL Protocol Support and other goodies</desc>
+		<toc>
+			<item id="urn:net:bosatsu:sparql:guide"/>
+			<item id="urn:net:bosatsu:sparql:example"/>
+		</toc>
+	</book>
+</books>

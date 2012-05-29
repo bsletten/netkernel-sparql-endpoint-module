@@ -1,0 +1,26 @@
+<config>
+	<endpoint>
+		<meta>
+			<rest>
+				<simple>sparql</simple>
+				<method>GET</method>
+			</rest>
+		</meta>
+		<grammar>
+			<active>
+				<identifier>active:sparql-protocol</identifier>
+			</active>
+		</grammar>
+		<request>
+			<identifier>active:groovy</identifier>
+			<argument name="operator">res:/resources/endpoints/sparql.gy</argument>
+		</request>
+	</endpoint>
+	<endpoint>
+		<grammar>active:sample-turtle</grammar>
+		<request>
+			<identifier>active:groovy</identifier>
+			<argument name="operator">res:/resources/endpoints/sample-turtle.gy</argument>
+		</request>
+	</endpoint>
+</config>

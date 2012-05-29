@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testlist>
+
+	<test name="Invoke service by identifier">
+		<request>
+			<identifier>res:/sparql/service/Hello</identifier>
+		</request>
+		<assert>
+			<stringEquals>Input value: Hello</stringEquals>
+		</assert>
+	</test>
+
+	<test name="Invoke service by endpoint">
+		<request>
+			<identifier>meta:ExampleEndpoint</identifier>
+			<argument name="value">Hello</argument>
+		</request>
+		<assert>
+			<stringEquals>Input value: Hello</stringEquals>
+		</assert>
+	</test>
+</testlist>

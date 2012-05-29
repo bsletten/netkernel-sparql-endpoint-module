@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<docs>
+	<doc>
+		<id>urn:net:bosatsu:sparql:guide</id>
+		<title>Guide to A SPARQL Module</title>
+		<desc/>
+		<uri>res:/resources/doc/doc_guide.txt</uri>
+	</doc>
+	<doc>
+		<id>urn:net:bosatsu:sparql:example</id>
+		<title>Reference for example endpoint</title>
+		<desc/>
+		<uri>res:/resources/doc/doc_example.txt</uri>
+	</doc>
+</docs>

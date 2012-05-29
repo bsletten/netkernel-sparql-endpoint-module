@@ -1,0 +1,14 @@
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.query.*;
+import org.netkernel.rdf.jena.rep.*;
+
+
+import org.netkernel.layer0.representation.IReadableBinaryStreamRepresentation;
+
+foaf = context.source("res:/resources/data/sample.ttl", IReadableBinaryStreamRepresentation.class)
+
+Model m=ModelFactory.createDefaultModel();
+m=m.read(foaf.getInputStream(), "", "TURTLE")
+
+context.createResponseFrom(new JenaModelRepresentation(m))

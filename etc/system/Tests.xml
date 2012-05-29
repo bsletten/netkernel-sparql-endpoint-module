@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tests>
+	<test>
+		<id>test:urn:net:bosatsu:sparql</id>
+		<name>A SPARQL Module</name>
+		<desc>SPARQL Protocol Support and other goodies</desc>
+		<uri>res:/resources/test/testlist.xml</uri>
+	</test>
+</tests>

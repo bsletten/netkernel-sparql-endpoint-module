@@ -1,0 +1,137 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix contact: <http://www.w3.org/2000/10/swap/pim/contact#> .
+@prefix loc: <http://simile.mit.edu/2005/05/ontologies/location#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix wot: <http://xmlns.com/wot/0.1/> .
+
+<http://bosatsu.net/foaf/brian.rdf>
+    a foaf:PersonalProfileDocument ;
+    foaf:maker <http://purl.org/net/bsletten> ;
+    foaf:primaryTopic <http://purl.org/net/bsletten> .
+
+<http://purl.org/net/bsletten>
+    a foaf:Person ;
+    rdf:value "Brian Sletten, brian@bosatsu.net" ;
+    foaf:aimChatID "Abbagliato" ;
+    foaf:dateOfBirth "1972-05-26" ;
+    foaf:family_name "Sletten" ;
+    foaf:givenname "Brian" ;
+    foaf:homepage <http://www.bosatsu.net> ;
+    foaf:img <http://bosatsu.net/images/briansletten.jpg> ;
+    foaf:interest <http://www.aosd.net/>, <http://www.w3.org/2000/01/sw/>, <http://www.w3.org/Metadata/>, <http://www.w3.org/RDF/> ;
+    foaf:knows <http://zepheira.com/team/bern/#me>, <http://zepheira.com/team/dave/#me>, <http://zepheira.com/team/eric/#me>, <http://zepheira.com/team/kathy/#me>, [
+        a foaf:Person ;
+        rdfs:seeAlso <http://lassila.org/ora.rdf#me> ;
+        foaf:name "Ora Lassila"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://purl.org/net/cmeier> ;
+        foaf:name "Carin Meier"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://posthorizon.com/scier/foaf.rdf> ;
+        foaf:name "Sean Cier"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://gearon.blogspot.com/> ;
+        foaf:mbox_sha1sum "9ad97b1210160f66f7d2994c1487eb87965a99aa" ;
+        foaf:name "Paul Gearon"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://etymon.blogspot.com/> ;
+        foaf:mbox_sha1sum "6965f3cd97f70281d4ef4d9f0218751d0387bcaf" ;
+        foaf:name "Andrae Muys"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://bosatsu.net/foaf/cengiz.rdf> ;
+        foaf:mbox_sha1sum "9b1f8b5b9a4dc52944602d6a3cad6a55b3fa7a48" ;
+        foaf:name "Cengiz Caglar"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://bosatsu.net/foaf/james.rdf> ;
+        foaf:mbox_sha1sum "29f11fd3268c7dde16e9fdc4bfe2d938f10f7646" ;
+        foaf:name "James McLeod"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://bosatsu.net/foaf/laurent.rdf> ;
+        foaf:mbox_sha1sum "c89511f94f2623f3fa117f35040108d6db737bb0" ;
+        foaf:name "Laurent Tonnelier"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://bosatsu.net/foaf/stewart.rdf> ;
+        foaf:mbox_sha1sum "6bb6427f8abe375195a9ee6c148de9380d1287ea" ;
+        foaf:name "Stewart Abel"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://www.cs.rpi.edu/%7Ehendler/foaf.rdf> ;
+        foaf:name "James Hendler"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://iandavis.com/id/me.rdf> ;
+        foaf:name "Ian Davis"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://purl.org/net/dmclure> ;
+        foaf:name "Dave McLure"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://mamund.com/foaf.rdf#me> ;
+        foaf:name "Mike Amundsen"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://www.snee.com/bob/foaf.rdf> ;
+        foaf:name "Bob DuCharme"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://thoughtcraft.com/~glen/foaf.xml> ;
+        foaf:name "Glen Daniels"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://www.ebenhewitt.com/eben.rdf> ;
+        foaf:name "Eben Hewitt"
+    ], [
+        a foaf:Person ;
+        rdfs:seeAlso <http://tomayac.com/thomas_steiner.rdf#me> ;
+        foaf:name "Thomas Steiner"
+    ] ;
+    foaf:mbox <mailto:brian@bosatsu.net> ;
+    foaf:name "Brian Sletten" ;
+    foaf:schoolHomepage <http://www.wm.edu> ;
+    foaf:weblog <http://vita-contemplativa.blogspot.com> ;
+    foaf:wishlist <http://amazon.com/gp/registry/24002YZI6GE7H> ;
+    foaf:workInfoHomepage <http://bosatsu.net> ;
+    foaf:workplaceHomepage <http://bosatsu.net> .
+
+<http://vita-contemplativa.blogspot.com>
+    dc:title "Vita Contemplativa" .
+
+<http://www.aosd.net/>
+    dc:title "Aspect-Oriented Programming" .
+
+<http://www.w3.org/2000/01/sw/>
+    dc:title "Semantic Web" .
+
+<http://www.w3.org/Metadata/>
+    dc:title "Metadata" .
+
+<http://www.w3.org/RDF/>
+    dc:title "Resource Description Framework (RDF)" .
+
+<http://zepheira.com/team/bern/#me>
+    rdf:value "Bernadette Hyland" ;
+    rdfs:seeAlso <http://zepheira.com/team/bern/foaf.rdf> .
+
+<http://zepheira.com/team/dave/#me>
+    rdf:value "Dave Wood" ;
+    rdfs:seeAlso <http://zepheira.com/team/dave/dave.rdf> .
+
+<http://zepheira.com/team/eric/#me>
+    rdf:value "Eric Miller" ;
+    rdfs:seeAlso <http://zepheira.com/team/eric/contact.rdf> .
+
+<http://zepheira.com/team/kathy/#me>
+    rdf:value "Kathy MacDougall" ;
+    rdfs:seeAlso <http://zepheira.com/team/kathy/kathy.rdf> .
+
