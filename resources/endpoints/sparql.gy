@@ -1,71 +1,17 @@
-import java.net.URLDecoder
+import java.net.*
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.query.*;
 import org.netkernel.layer0.representation.*;
 import org.netkernel.rdf.jena.rep.*;
 
-
-def fetchGraphs(graphList) {
-	def handles = [:]
-	
-	graphList.each { g->
-	   req = null
-
-		if(g.startsWith("http://")) {
-			req = context.createRequest("active:httpGet")
-			req.addArgument("url", g)
-			req.addArgument("config", "res:/resources/config/httpClientConfig.xml")
-		} else {
-			req = context.createRequest(g)
-		}
-
-		handles[g] = context.issueAsyncRequest(req)
-	}
-	
-	handles
-}
-
-def getModelResult(h, handle) {
-   def m = null
-
-   result = handle.joinForResponse()
-   r = result.getRepresentation()
-
-   switch(r.getClass()) {
-	  case ByteArrayRepresentation.class :
-		if(h.startsWith("http://")) {
-			switch(result.getHeader("HTTP_ACCESSOR_STATUS_CODE_METADATA")) {
-			   case 200:
-		        m = context.source("active:jRDFEmptyModel").getModel()
-		        m = m.read(r.getInputStream(), "", "RDF/XML")
-			   break;
-			  default :
-				println "NON-200 HTTP RESPONSE"
-			  break;
-			}
-		} else {
-			println "NON-HTTP BYTEARRAYREPRESENTATION!"
-		}
-	  break;
-	
-	  case JenaModelRepresentation.class :
-		m = r.model
-	  break;
-	
-	  default :
-		println "UNHANDLED CLASS: " + r.getClass()	
-	  break;
-   }
-
-   m
-}
-
 def determineMIMEType(defaultMIMEType) {
 	requestedMIMEType = context.source("httpRequest:/header/Accept")
 	
 	if(requestedMIMEType == null || requestedMIMEType.equals("*/*")) {
 		requestedMIMEType = defaultMIMEType
+	} else if(requestedMIMEType.contains("text/html")) {
+		requestedMIMEType = "text/plain"
 	}
 	
 	requestedMIMEType
@@ -94,15 +40,16 @@ def serializeRDF(requestedMIMEType, model) {
 	resp = null
 	
 	if(serializer != null) {
+		println model.getModel()
 	  req = context.createRequest(serializer)
-	  req.addArgumentByValue("operand", new JenaModelRepresentation(results))
+	  req.addArgumentByValue("operand", model) //new JenaModelRepresentation(model))
 	  resp = context.issueRequest(req)
 	}
 	
 	resp
 }
 
-def serializeResultSet(requestedMIMEType, model) {
+def serializeResultSet(requestedMIMEType, results) {
 	resp = null
 	
 	switch(requestedMIMEType) {
@@ -145,6 +92,8 @@ namedGraphParams.each { n->
 
 query = parms.getFirstNode("/query").value
 
+println "QUERY: " + query
+
 if(query == null) {
 	// Check the body
 } else {
@@ -153,55 +102,43 @@ if(query == null) {
 	query = URLDecoder.decode(query, "UTF-8")
 }
 
-query = QueryExecutionFactory.create(query)
+//encoded = URLEncoder.encode(query)
+query = "data:text/plain,$query"
 
-if(query.query.graphURIs.size > 0) {
-   defaultGraphs.addAll(query.query.graphURIs)
+println "query: " + query
+
+req = context.createRequest("active:sparql")
+req.addArgument("query", query)
+
+defaultGraphs.each { d->
+	println ("AAAADING: $d")
+	req.addArgument("default-graph-uri", d)
 }
 
-if(query.query.namedGraphURIs.size > 0) {
-	namedGraphs.addAll(query.query.namedGraphURIs)
+namedGraphs.each { n->
+    req.addArgument("named-graph-uri", n)
 }
 
-names = query.query.graphURIs
-
-defaultGraphHandles = fetchGraphs(defaultGraphs)
-namedGraphHandles = fetchGraphs(namedGraphs)
-
-ds = DatasetFactory.createMem()
-m = context.source("active:jRDFEmptyModel").getModel()
-
-defaultGraphHandles.keySet().each { h ->
-	mResult = getModelResult(h, defaultGraphHandles[h])
-
-	if(mResult != null) {
-		m.add(mResult)
-	}
-}
-
-namedGraphHandles.keySet().each { h ->
-	mResult = getModelResult(h, namedGraphHandles[h])
-	if(mResult != null) {
-		ds.addNamedGraph(h, mResult)
-	}
-}
-
-ds.setDefaultModel(m)
-query = QueryExecutionFactory.create(query.query, ds)
-
+result = context.issueRequest(req)
 resp = null
 mimeType = null
 
-switch(query.query.queryType) {
-	case Query.QueryTypeSelect :
-  	  results = query.execSelect()
-	  mimeType = determineMIMEType("application/sparql-results+xml")
-	  resp = serializeResultSet(mimeType, results)	
-	break;
-	case Query.QueryTypeConstruct :
-	  results = query.execConstruct()
+switch(result.getClass()) {
+	case JenaModelRepresentation.class :
 	  mimeType = determineMIMEType("application/rdf+xml")	
-	  resp = serializeRDF(mimeType, results)
+	  resp = serializeRDF(mimeType, result)
+	println "RRRR"	+ resp
+	break;
+	default :
+		println result
+		if(ResultSet.class.isAssignableFrom(result.getClass())) {
+			//print ResultSetFormatter.asXMLString(result)
+			mimeType = determineMIMEType("application/sparql-results+xml")
+			println mimeType
+			resp = serializeResultSet(mimeType, result)	
+			println resp
+		}
+	println "CLASS: " + result.getClass()
 	break;
 }
 

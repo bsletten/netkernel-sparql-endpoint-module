@@ -1,0 +1,160 @@
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.query.*;
+import org.netkernel.layer0.representation.*;
+import org.netkernel.rdf.jena.rep.*;
+import com.hp.hpl.jena.sparql.resultset.*
+
+
+def fetchGraphs(graphList) {
+	def handles = [:]
+	
+	graphList.each { g->
+	   req = null
+
+		if(g.startsWith("http://")) {
+			req = context.createRequest("active:httpGet")
+			req.addArgument("url", g)
+			req.addArgument("config", "res:/resources/config/httpClientConfig.xml")
+		} else {
+			req = context.createRequest(g)
+		}
+
+		handles[g] = context.issueAsyncRequest(req)
+	}
+	
+	handles
+}
+
+def getModelResult(h, handle) {
+   def m = null
+
+   result = handle.joinForResponse()
+   r = result.getRepresentation()
+
+   switch(r.getClass()) {
+	  case ByteArrayRepresentation.class :
+		if(h.startsWith("http://")) {
+			switch(result.getHeader("HTTP_ACCESSOR_STATUS_CODE_METADATA")) {
+			   case 200:
+		        m = context.source("active:jRDFEmptyModel").getModel()
+		        m = m.read(r.getInputStream(), "", "RDF/XML")
+			   break;
+			  default :
+				println "NON-200 HTTP RESPONSE"
+			  break;
+			}
+		} else {
+			println "NON-HTTP BYTEARRAYREPRESENTATION!"
+		}
+	  break;
+	
+	  case JenaModelRepresentation.class :
+		m = r.model
+	  break;
+	
+	  default :
+		try {
+			r = context.transrept(r, ByteArrayRepresentation.class)
+			m = context.source("active:jRDFEmptyModel").getModel()
+			m = m.read(r.getInputStream(), "", "RDF/XML")
+		} finally {
+		   println "UNHANDLED CLASS: " + r.getClass()	
+		}
+	  break;
+   }
+
+   m
+}
+
+query = context.source("arg:query", String.class)
+
+argCnt = context.thisRequest.argumentCount
+println "ARG CNT: ${argCnt}"
+
+for(int i = 0; i < argCnt; i++) {
+	println context.thisRequest.getArgumentName(i) + ":" + context.thisRequest.getArgumentValue(i)
+}
+
+defaultGraphs = []
+namedGraphs = []
+
+for(int i = 0; i < argCnt; i++) {
+	arg = context.thisRequest.getArgumentName(i)
+	
+	switch(arg) {
+		case "default-graph-uri" :
+		  defaultGraphs.add(context.thisRequest.getArgumentValue(i))		
+		break;
+		case "named-graph-uri" :
+   		  namedGraphs.add(context.thisRequest.getArgumentValue(i))
+		break;
+		default :
+		// Unexpected
+		break;
+	}
+}
+
+println "QQQQ: " + query
+
+query = QueryExecutionFactory.create(query)
+
+if(query.query.graphURIs.size > 0) {
+   defaultGraphs.addAll(query.query.graphURIs)
+}
+
+if(query.query.namedGraphURIs.size > 0) {
+	namedGraphs.addAll(query.query.namedGraphURIs)
+}
+
+println "+++++++++++++"
+println query
+println defaultGraphs
+println namedGraphs
+println "+++++++++++++"
+
+defaultGraphHandles = fetchGraphs(defaultGraphs)
+namedGraphHandles = fetchGraphs(namedGraphs)
+
+ds = DatasetFactory.createMem()
+m = context.source("active:jRDFEmptyModel").getModel()
+
+defaultGraphHandles.keySet().each { h ->
+	mResult = getModelResult(h, defaultGraphHandles[h])
+	
+	if(mResult != null) {
+		m.add(mResult)
+	}
+}
+
+namedGraphHandles.keySet().each { h ->
+	mResult = getModelResult(h, namedGraphHandles[h])
+	
+	if(mResult != null) {
+		ds.addNamedGraph(h, mResult)
+	}
+}
+
+ds.setDefaultModel(m)
+query = QueryExecutionFactory.create(query.query, ds)
+
+resp = null
+setNoExpire = false
+
+switch(query.query.queryType) {
+	case Query.QueryTypeSelect :
+  	  resp = query.execSelect()
+	  setNoExpire = true
+// 	  print ResultSetFormatter.asXMLString(resp)
+	break;
+	case Query.QueryTypeConstruct :
+	  results = query.execConstruct()
+		println "CCC" + results
+	  resp = new JenaModelRepresentation(results)
+	break;
+}
+
+resp = context.createResponseFrom(resp)
+if(setNoExpire) {
+   resp.setExpiry(resp.EXPIRY_ALWAYS)
+}

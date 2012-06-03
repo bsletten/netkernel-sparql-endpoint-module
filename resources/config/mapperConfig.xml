@@ -17,6 +17,23 @@
 		</request>
 	</endpoint>
 	<endpoint>
+		<grammar>
+			<active>
+				<identifier>active:sparql</identifier>
+				<argument name="query" min="1" max="1" desc="SPARQL query"/>
+				<argument name="default-graph-uri" min="0" max="*" desc="Default Graph URIs"/>
+				<argument name="named-graph-uri" min="0" max="*" desc="Named Graph URIs"/>
+				<varargs/>
+			</active>
+		</grammar>
+		<request>
+			<identifier>active:groovy</identifier>
+			<argument name="operator">res:/resources/endpoints/sparql-query.gy</argument>
+			<argument name="query">arg:query</argument>
+			<varargs/>
+		</request>		
+	</endpoint>
+	<endpoint>
 		<grammar>active:sample-turtle</grammar>
 		<request>
 			<identifier>active:groovy</identifier>

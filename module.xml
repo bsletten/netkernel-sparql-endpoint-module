@@ -14,7 +14,7 @@
    <system>
       <dynamic/>
    </system>
-   <rootspace name="A SPARQL Module - Development Space" uri="urn:net:bosatsu:sparql">
+   <rootspace name="A SPARQL Module - Development Space" public="true" uri="urn:net:bosatsu:sparql:public">
       <fileset>
          <regex>res:/etc/system/SimpleDynamicImportHook.xml</regex>
       </fileset>
@@ -39,7 +39,7 @@
       </fileset>
    </rootspace>
 
-   <rootspace name="A SPARQL Module - Impl" uri="urn:net:bosatsu:sparql:impl">
+   <rootspace name="A SPARQL Module - Impl" public="true" uri="urn:net:bosatsu:sparql:impl">
 	<mapper>
 		<config>
 			<import>res:/resources/config/mapperConfig.xml</import>
@@ -57,9 +57,31 @@
 			<import>
 			  <uri>urn:org:netkernel:client:http</uri>
 			</import>
+			<import>
+				<uri>urn:org:netkernel:ext:layer1</uri>
+			</import>
+			<import>
+				<uri>urn:net:bosatsu:sparql:dynamic</uri>
+			</import>			
 		</space>
 	</mapper>
    </rootspace>
+
+   <rootspace uri="urn:net:bosatsu:sparql:dynamic" public="false">
+		<endpoint>
+			<prototype>SimpleImportDiscovery</prototype>
+			<grammar>active:SPARQLImportDiscovery</grammar>
+			<type>sparql</type>
+		</endpoint>
+		<endpoint>
+			<prototype>DynamicImport</prototype>
+			<config>active:SPARQLImportDiscovery</config>
+		</endpoint>
+		<import>
+			<private/>
+			<uri>urn:org:netkernel:ext:layer1</uri>
+		</import>
+	</rootspace>
 
    <rootspace name="A SPARQL Module - Documentation Space" public="true" uri="urn:net:bosatsu:sparql:doc">
       <fileset>
@@ -83,7 +105,7 @@
          </grammar>
       </endpoint>
       <import><!-- import the main space which we are testing -->
-         <uri>urn:net:bosatsu:sparql</uri>
+         <uri>urn:net:bosatsu:sparql:public</uri>
       </import>
       <import>
          <uri>urn:org:netkernel:ext:layer1</uri>

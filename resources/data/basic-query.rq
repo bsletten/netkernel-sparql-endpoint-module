@@ -1,0 +1,5 @@
+SELECT ?s ?p ?o 
+FROM <active:sample-turtle>
+WHERE {
+   ?s ?p ?o
+}

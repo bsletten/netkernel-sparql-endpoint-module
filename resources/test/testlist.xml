@@ -9,6 +9,22 @@
 			<stringEquals>Input value: Hello</stringEquals>
 		</assert>
 	</test>
+	
+	<test name="Invoke sparql-query to SELECT">
+		<request>
+			<identifier>active:sparql</identifier>
+			<argument name="query">res:/resources/data/basic-query.rq</argument>
+		</request>
+	</test>
+	
+	<test name="Invoke sparql-query to CONSTRUCT">
+		<request>
+			<identifier>active:sparql</identifier>
+			<argument name="query">res:/resources/data/construct.rq</argument>
+			<argument name="default-graph-uri">active:sample-turtle</argument>
+			<argument name="default-graph-uri">active:sample-turtle2</argument>			
+		</request>
+	</test>
 
 	<test name="Invoke service by endpoint">
 		<request>
