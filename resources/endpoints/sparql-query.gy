@@ -46,6 +46,8 @@ def getModelResult(h, handle) {
 			}
 		} else {
 			println "NON-HTTP BYTEARRAYREPRESENTATION!"
+			m = context.source("active:jRDFEmptyModel").getModel()
+			m = m.read(r.getInputStream(), "", "RDF/XML")
 		}
 	  break;
 	
